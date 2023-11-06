@@ -41,7 +41,6 @@ class ViewController: UIViewController {
         }
 
         if let image = UIImage(systemName: "arrow.right.circle.fill")?.withRenderingMode(.alwaysTemplate) {
-
             setupButton(button: button1 , text: "Text", image: image)
             setupButton(button: button2 , text: "Very loooooooooooong Text", image: image)
             setupButton(button: button3 , text: "nrml Text", image: image)
@@ -98,7 +97,12 @@ class ViewController: UIViewController {
         blankVC.view.layer.cornerRadius = 20
         blankVC.transitioningDelegate = self
         blankVC.modalPresentationStyle = .custom
-        self.present(blankVC, animated: true) { [weak self] in
+        blankVC.onDissmiss = {[weak self] in self?.makeAllButtonsBlue() }
+        self.makeAllButtonsGray()
+
+        self.present(blankVC, animated: true)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
             self?.animator3.stopAnimation(true)
             self?.button3.transform = .identity
         }
@@ -183,10 +187,8 @@ class ViewController: UIViewController {
         button.imageView?.tintColor = .systemGray3
         button.setTitleColor(.systemGray3, for: .normal)
     }
-}
 
-extension ViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+    func makeAllButtonsBlue() {
         [
             button1,
             button2,
@@ -195,32 +197,26 @@ extension ViewController: UIAdaptivePresentationControllerDelegate {
             makeButtonBlue(button: $0)
         }
     }
+
+    func makeAllButtonsGray() {
+        [
+            self.button1,
+            self.button2,
+            self.button3
+        ].forEach {
+            self.makeButtonGray(button: $0)
+        }
+    }
+}
+
+extension ViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+    }
 }
 
 extension ViewController: UIViewControllerTransitioningDelegate {
     func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
         customPresentationVC = CustomPresentationController.init(presentedViewController: presented, presenting: presenting ?? source)
-        customPresentationVC?.beginCompletion = { [weak self] in
-            guard let self else { return }
-            [
-                self.button1,
-                self.button2,
-                self.button3
-            ].forEach {
-                self.makeButtonGray(button: $0)
-            }
-        }
-
-        customPresentationVC?.finishCompletion = { [weak self] in
-            guard let self else { return }
-            [
-                self.button1,
-                self.button2,
-                self.button3
-            ].forEach {
-                self.makeButtonBlue(button: $0)
-            }
-        }
         return customPresentationVC
     }
 }

@@ -4,7 +4,7 @@ class ModalViewController: UIViewController {
     var panGestureRecognizer: UIPanGestureRecognizer?
     var originalPosition: CGPoint?
     var currentPositionTouched: CGPoint?
-
+    var onDissmiss: ( () -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,7 +37,8 @@ class ModalViewController: UIViewController {
                 )
               }, completion: { (isCompleted) in
                 if isCompleted {
-                  self.dismiss(animated: true, completion: nil)
+                    self.onDissmiss?()
+                    self.dismiss(animated: true, completion: nil)
                 }
             })
           } else {
