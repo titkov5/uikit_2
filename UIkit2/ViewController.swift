@@ -1,12 +1,10 @@
 import UIKit
 
 class ViewController: UIViewController {
-    
     let button1 = UIButton()
     let button2 = UIButton()
     let button3 = UIButton()
 
-    var customPresentationVC: CustomPresentationController?
     let blankVC = ModalViewController()
 
     var animator1: UIViewPropertyAnimator!
@@ -27,21 +25,11 @@ class ViewController: UIViewController {
         animator3 = UIViewPropertyAnimator(duration: 0.3, curve: .easeInOut) { [button3] in
             button3.transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
         }
-
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _  in
-            guard var self else { return }
-
-            if self.presentedViewController == nil {
-                makeAllButtonsBlue()
-            } else {
-                makeAllButtonsGray()
-            }
-        }
     }
 
     override func viewDidLoad() {
-
         super.viewDidLoad()
+
         [
             button1,
             button2,
@@ -57,8 +45,6 @@ class ViewController: UIViewController {
         }
 
         button3.addTarget(self, action: #selector(showViewController), for: .touchDown)
-
-        customPresentationVC?.delegate = self
     }
 
     override func viewDidLayoutSubviews() {
@@ -84,6 +70,11 @@ class ViewController: UIViewController {
         button3.center = position
     }
 
+    override func loadView() {
+        view = ContentView()
+        view.backgroundColor = .white
+    }
+
     func setupButton(button: UIButton, text: String, image: UIImage) {
         button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 0)
         button.titleEdgeInsets = UIEdgeInsets(top: 0, left: -8, bottom: 0, right: 0)
@@ -104,10 +95,6 @@ class ViewController: UIViewController {
 
     @objc
     func showViewController() {
-        blankVC.view.layer.cornerRadius = 20
-        blankVC.transitioningDelegate = self
-        blankVC.modalPresentationStyle = .custom
-
         self.present(blankVC, animated: true)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
@@ -179,84 +166,29 @@ class ViewController: UIViewController {
 
         }
     }
+}
 
-    func makeButtonBlue(button: UIButton) {
-        button.backgroundColor = .systemBlue
-        button.tintColor = .white
-        button.imageView?.tintColor = .white
-        button.setTitleColor(.white, for: .normal)
-        button.setTitleColor(.white, for: .selected)
-    }
+class ContentView: UIView {
+    let tintBlue = UIColor.systemBlue
 
-    func makeButtonGray(button: UIButton) {
-        button.backgroundColor = .systemGray2
-        button.tintColor = .systemGray3
-        button.imageView?.tintColor = .systemGray3
-        button.setTitleColor(.systemGray3, for: .normal)
-    }
+    override func tintColorDidChange() {
+        super.tintColorDidChange()
 
-    func makeAllButtonsBlue() {
-        [
-            button1,
-            button2,
-            button3
-        ].forEach {
-            makeButtonBlue(button: $0)
+        subviews.forEach { subview in
+            if let button = subview as? UIButton {
+                if tintColor == tintBlue {
+                    button.backgroundColor = .systemBlue
+                    button.tintColor = .white
+                    button.imageView?.tintColor = .white
+                    button.setTitleColor(.white, for: .normal)
+                    button.setTitleColor(.white, for: .selected)
+                } else {
+                    button.backgroundColor = .systemGray2
+                    button.tintColor = .systemGray3
+                    button.imageView?.tintColor = .systemGray3
+                    button.setTitleColor(.systemGray3, for: .normal)
+                }
+            }
         }
-    }
-
-    func makeAllButtonsGray() {
-        [
-            self.button1,
-            self.button2,
-            self.button3
-        ].forEach {
-            self.makeButtonGray(button: $0)
-        }
-    }
-}
-
-extension ViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-    }
-}
-
-extension ViewController: UIViewControllerTransitioningDelegate {
-    func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
-        customPresentationVC = CustomPresentationController.init(presentedViewController: presented, presenting: presenting ?? source)
-        return customPresentationVC
-    }
-}
-
-class CustomPresentationController: UIPresentationController {
-    var beginCompletion: (() -> Void)?
-    var finishCompletion: (() -> Void)?
-   
-    override var shouldPresentInFullscreen: Bool {
-        return false
-    }
-    
-    override var frameOfPresentedViewInContainerView: CGRect {
-        let bounds = containerView!.bounds
-        let y = bounds.height * 0.1
-        return CGRect(x: 0,
-                      y: y,
-                      width: bounds.width,
-                      height: bounds.height)
-    }
-
-    override func presentationTransitionWillBegin() {
-        super.presentationTransitionWillBegin()
-        beginCompletion?()
-    }
-
-    override func containerViewDidLayoutSubviews() {
-        super.containerViewDidLayoutSubviews()
-        presentedView?.frame = frameOfPresentedViewInContainerView
-    }
-
-    override func dismissalTransitionWillBegin() {
-        super.dismissalTransitionWillBegin()
-        finishCompletion?()
     }
 }
