@@ -27,11 +27,21 @@ class ViewController: UIViewController {
         animator3 = UIViewPropertyAnimator(duration: 0.3, curve: .easeInOut) { [button3] in
             button3.transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
         }
+
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _  in
+            guard var self else { return }
+
+            if self.presentedViewController == nil {
+                makeAllButtonsBlue()
+            } else {
+                makeAllButtonsGray()
+            }
+        }
     }
 
     override func viewDidLoad() {
-        super.viewDidLoad()
 
+        super.viewDidLoad()
         [
             button1,
             button2,
@@ -97,8 +107,6 @@ class ViewController: UIViewController {
         blankVC.view.layer.cornerRadius = 20
         blankVC.transitioningDelegate = self
         blankVC.modalPresentationStyle = .custom
-        blankVC.onDissmiss = {[weak self] in self?.makeAllButtonsBlue() }
-        self.makeAllButtonsGray()
 
         self.present(blankVC, animated: true)
 
@@ -154,7 +162,6 @@ class ViewController: UIViewController {
 
         switch animator.state {
         case .active:
-            print("active")
             animator.stopAnimation(true)
 
             animator = UIViewPropertyAnimator(duration: 0.3, curve: .easeInOut) { [button] in

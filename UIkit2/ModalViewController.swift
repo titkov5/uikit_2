@@ -37,7 +37,6 @@ class ModalViewController: UIViewController {
                 )
               }, completion: { (isCompleted) in
                 if isCompleted {
-                    self.onDissmiss?()
                     self.dismiss(animated: true, completion: nil)
                 }
             })
